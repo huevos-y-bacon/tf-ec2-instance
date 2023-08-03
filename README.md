@@ -1,6 +1,6 @@
 # Quick Terraform EC2 Instance
 
-- Create an EC2 instance (Latest Amazon Linux 2) in AWS in a chosen VPC and subnet (run bash script)
+- Create an EC2 instance (Latest Amazon Linux 2) in AWS in a chosen VPC and subnet (**run bash script to populate locals!**)
 - Create a security group, role, instance profile, etc.
 
 ***NOTE*** - STATE IS STORED LOCALLY
