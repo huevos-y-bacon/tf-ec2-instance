@@ -15,11 +15,12 @@ locals {
   user_data = <<EOF
 #!/bin/bash
 sudo yum update -y
-# sudo yum install docker nc -y
+sudo yum install nc -y
+# sudo amazon-linux-extras install postgresql10 -y
 sudo wget https://www.vdberg.org/~richard/tcpping --no-check-certificate
 sudo mv tcpping /usr/bin/
 sudo chmod 755 /usr/bin/tcpping
-sudo wall "user_data script complete. tcping installed"
+# sudo wall "user_data script complete. tcping installed"
 EOF
 
 }
@@ -47,7 +48,7 @@ data "aws_ami" "amazon-linux-2" {
 }
 
 resource "aws_iam_role" "foo" {
-  name_prefix        = "${local.name}-"
+  name_prefix        = "jake"
   path               = "/"
   assume_role_policy = <<-EOF
     {

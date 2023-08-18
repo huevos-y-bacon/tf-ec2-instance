@@ -2,3 +2,5 @@
 **/.archive/**
 .DS_Store
 .vscode
+terraform.*
+vpc_subnet.*
