@@ -1,7 +1,7 @@
 # QUICK EC2 INSTANCE WITH SSM SM AND EC2 ROLE
 
 provider "aws" {
-  region = "us-east-1"
+  # region = "us-east-1"
 }
 
 locals {
