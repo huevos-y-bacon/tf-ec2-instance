@@ -9,7 +9,7 @@ locals {
   # included in vpc_subnet.tf: vpc_id, subnet_id, subnet_name
 
   name          = "${local.name_prefix}-${local.subnet_name}"
-  instance_type = "t3.medium"
+  instance_type = "t3.nano"
   ami           = data.aws_ami.amazon-linux-2.id
 
   user_data = <<EOF
@@ -29,6 +29,12 @@ variable "attach_instance_profile" {
   description = "Set to true to create an IAM Instance profile and attach to EC2"
   type        = bool
   default     = true
+}
+
+variable "attach_s3_full_access" {
+  description = "Set to true to attach AmazonS3FullAccess policy to EC2 role"
+  type        = bool
+  default     = false
 }
 
 data "aws_ami" "amazon-linux-2" {
@@ -74,6 +80,12 @@ resource "aws_iam_role" "foo" {
 resource "aws_iam_role_policy_attachment" "foo" {
   role       = aws_iam_role.foo.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+}
+
+resource "aws_iam_role_policy_attachment" "s3full" {
+  count      = var.attach_s3_full_access ? 1 : 0
+  role       = aws_iam_role.foo.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
 resource "aws_iam_instance_profile" "foo" {
