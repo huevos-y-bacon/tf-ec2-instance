@@ -13,3 +13,9 @@
     - Filter subnets by name with the first argument
       - e.g. `./get_vpc_and_subnet.sh private`
 2. Run `tfinit`, `tfplan`, `tfapply`, etc as usual 
+
+
+## Cleanup
+
+1. Run `./cleanup.sh` to initiate cleanup.
+2. It will first destroy the TF resources (after confirmation), after which it will delete local generated config and all `.terraform*` files (after another confirmation)
