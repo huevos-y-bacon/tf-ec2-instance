@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-id=$(terraform output -raw instance_id)
-name=$(terraform output -raw instance_name)
-echo "Stopping ez_tf_ec2_instance:
-- ${name}
-- ${id}
-"
-aws ec2 stop-instances --instance-ids "${id}" --out yaml
