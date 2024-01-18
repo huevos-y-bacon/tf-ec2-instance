@@ -14,6 +14,14 @@
       - e.g. `./get_vpc_and_subnet.sh private`
 2. Run `tfinit`, `tfplan`, `tfapply`, etc as usual 
 
+## Instance State
+
+Three scripts available to control the instance's state:
+
+1. `./instance_start` - Start the instance
+2. `./instance_stop` - Stop the instance
+3. `./instance_state` - Check the current state of the instance
+
 
 ## Cleanup
 
