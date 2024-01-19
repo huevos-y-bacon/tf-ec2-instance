@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
-# shellcheck disable=1091
+# shellcheck disable=1091,2312
 
 source colours 2>/dev/null
 
 CWD=$(basename "$(pwd)")
-if [ "$CWD" == "bin" ]; then
+if [[ "${CWD}" == "bin" ]]; then
     echo "${RED}Error: Script cannot be executed directly from inside ${CWD}.${NORM}"
     exit 1
 fi
 
 id=$(terraform output -raw instance_id)
 name=$(terraform output -raw instance_name)
-echo "Getting instance state for ez_tf_ec2_instance:
-  Name       : ${name}
-  InstanceId : ${id}
-"
+
+echo -e "${BOLD}${YELLOW}Getting instance state for instance ${id} (${name})${NORM}\n"
+
 echo -n "Instance state: "
 
 aws ec2 describe-instances --instance-ids "${id}" --query 'Reservations[].Instances[].State[].Name' --output text
