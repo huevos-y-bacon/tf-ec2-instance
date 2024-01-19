@@ -9,8 +9,10 @@ if [[ "${CWD}" == "bin" ]]; then
     exit 1
 fi
 
+echo -n "Getting instance details from TF state... "
 id=$(terraform output -raw instance_id)
 name=$(terraform output -raw instance_name)
+echo -e "done\n"
 
 echo -e "${BOLD}${YELLOW}Getting instance state for instance ${id} (${name})${NORM}\n"
 
