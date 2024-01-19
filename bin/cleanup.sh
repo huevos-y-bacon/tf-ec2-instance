@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# shellcheck disable=1091,2162
+# shellcheck disable=1091,2162,2312
 
 source colours 2>/dev/null
 
 CWD=$(basename "$(pwd)")
-if [ "$CWD" == "bin" ]; then
+if [[ "${CWD}" == "bin" ]]; then
     echo "${RED}Error: Script cannot be executed directly from inside ${CWD}.${NORM}"
     exit 1
 fi
@@ -12,15 +12,15 @@ fi
 confirm(){
   INPUT=$*
   do_confirm(){
-    [[ -n $INPUT ]] && echo -e "${BOLD}${YELLOW}${INPUT}${RED}"
+    [[ -n ${INPUT} ]] && echo -e "${BOLD}${YELLOW}${INPUT}${RED}"
     read -p "Are you sure you want to proceed? (y/n) ${NORM}" choice
-    case "$choice" in
+    case "${choice}" in
       y|Y ) ;;
       * ) echo -e "Aborting\n" && exit;;
     esac
   };
 
-  if [[ ! $FORCE ]]; then do_confirm; fi
+  if [[ -z ${FORCE} ]]; then do_confirm; fi
   echo "${NORM}"
   unset INPUT
 }

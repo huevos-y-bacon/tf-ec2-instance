@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=2016,2155,1091
+# shellcheck disable=2016,2155,1091,2312
 
 # THIS SCRIPT IS USED TO GENERATE THE vpc_subnet.tf FILE
 # Filter subnets by name with the first argument
@@ -8,7 +8,7 @@
 source colours 2>/dev/null
 
 CWD=$(basename "$(pwd)")
-if [ "$CWD" == "bin" ]; then
+if [[ "${CWD}" == "bin" ]]; then
     echo "${RED}Error: Script cannot be executed directly from inside ${CWD}.${NORM}"
     exit 1
 fi
