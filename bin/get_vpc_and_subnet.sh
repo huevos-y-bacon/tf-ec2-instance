@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
-# shellcheck disable=2016,2155
+# shellcheck disable=2016,2155,1091
 
 # THIS SCRIPT IS USED TO GENERATE THE vpc_subnet.tf FILE
 # Filter subnets by name with the first argument
-#   - e.g. ./get_vpc_and_subnet.sh private
+#   - e.g. bin/get_vpc_and_subnet.sh private
+
+source colours 2>/dev/null
+
+CWD=$(basename "$(pwd)")
+if [ "$CWD" == "bin" ]; then
+    echo "${RED}Error: Script cannot be executed directly from inside ${CWD}.${NORM}"
+    exit 1
+fi
 
 extract_vpcs(){
   aws ec2 describe-vpcs \
@@ -17,7 +25,7 @@ extract_vpcs(){
 
 select_vpc() {
   echo "Select a VPC:"
-  select vpc in ${vpcs};
+  select vpc in ${vpcs}; # 
   do
     echo "You selected ${vpc} (${REPLY})"
     export VPC_NAME=$(echo "${vpc}" | cut -d ',' -f 1 | sed 's/"//g')
@@ -50,10 +58,10 @@ select_subnet(){
   done
 }
 
-vpcs="$(extract_vpcs)"
+vpcs="$(extract_vpcs | sort)"
 select_vpc || exit 1
 
-subnets="$(extract_subnets | sed 's/[[:space:]]//g')"
+subnets="$(extract_subnets | sed 's/[[:space:]]//g' | sort)"
 
 # filter subnets by name
 if [[ -n $1 ]]; then

@@ -1,60 +1,7 @@
-# QUICK EC2 INSTANCE WITH SSM SM AND EC2 ROLE
-
-provider "aws" {
-  # region = "us-east-1"
-}
-
-locals {
-  # DONT ADD HERE - run get_vpc_and_subnet.sh to get these values
-  # included in vpc_subnet.tf: vpc_id, subnet_id, subnet_name
-
-  name          = "${local.name_prefix}-${local.subnet_name}"
-  instance_type = "t3.nano"
-  ami           = data.aws_ami.amazon-linux-2.id
-
-  user_data = <<EOF
-#!/bin/bash
-sudo yum update -y
-sudo yum install nc -y
-# sudo amazon-linux-extras install postgresql10 -y
-sudo wget https://www.vdberg.org/~richard/tcpping --no-check-certificate
-sudo mv tcpping /usr/bin/
-sudo chmod 755 /usr/bin/tcpping
-# sudo wall "user_data script complete. tcping installed"
-EOF
-
-}
-
-variable "attach_instance_profile" {
-  description = "Set to true to create an IAM Instance profile and attach to EC2"
-  type        = bool
-  default     = true
-}
-
-variable "attach_s3_full_access" {
-  description = "Set to true to attach AmazonS3FullAccess policy to EC2 role"
-  type        = bool
-  default     = false
-}
-
-data "aws_ami" "amazon-linux-2" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm*"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-}
+# EC2 INSTANCE WITH SSM SM AND EC2 ROLE
 
 resource "aws_iam_role" "foo" {
-  name_prefix        = "jake"
+  name_prefix        = local.name_prefix
   path               = "/"
   assume_role_policy = <<-EOF
     {
@@ -77,7 +24,20 @@ resource "aws_iam_role" "foo" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "foo" {
+resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore" {
+  count      = var.attach_ssm_instance_core_access ? 1 : 0
+  role       = aws_iam_role.foo.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "ReadOnlyAccess" {
+  count      = var.attach_read_only_access ? 1 : 0
+  role       = aws_iam_role.foo.name
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonEC2RoleforSSM" {
+  count      = var.attach_ec2_role_for_ssm_access ? 1 : 0
   role       = aws_iam_role.foo.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
 }
@@ -102,6 +62,8 @@ resource "aws_instance" "foo" {
   vpc_security_group_ids = [aws_security_group.foo.id]
   user_data_base64       = base64encode(local.user_data)
 
+  key_name = var.key_name != null ? var.key_name : null # if key_name is not set, do not set key_name
+
   metadata_options {
     http_tokens = "required" # Enforce IMDSv2; see https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
   }
@@ -110,21 +72,21 @@ resource "aws_instance" "foo" {
     Name      = local.name
     Terraform = true
   }
-
-}
-
-output "instance_id" {
-  value = aws_instance.foo.id
-}
-
-output "instance_name" {
-  value = local.name
 }
 
 resource "aws_security_group" "foo" {
   name_prefix = "${local.name}-"
   description = local.name
   vpc_id      = local.vpc_id
+
+  #ts:skip=AC_AWS_0319 play account - home access only
+  # ingress {
+  #   from_port   = 22
+  #   to_port     = 22
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["${chomp(data.http.myip.response_body)}/32"]
+  #   description = "ssh j home"
+  # }
 
   egress {
     from_port        = 0
