@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# shellcheck disable=1091,2312
+
+source colours 2>/dev/null
+
+CWD=$(basename "$(pwd)")
+if [[ "${CWD}" == "bin" ]]; then
+    echo "${RED}Error: Script cannot be executed directly from inside ${CWD}.${NORM}"
+    exit 1
+fi
+
+echo -n "Getting instance details from TF state... "
+id=$(terraform output -raw instance_id)
+name=$(terraform output -raw instance_name)
+echo -e "done\n"
+
+if [[ "$1" == "--force" ]]; then
+  echo -e "${BOLD}${RED}Force stopping instance ${id} (${name})${NORM}\n"
+  aws ec2 stop-instances --instance-ids "${id}" --out yaml --force
+else
+  echo -e "${BOLD}${YELLOW}Stopping instance ${id} (${name})${NORM}\n"
+  aws ec2 stop-instances --instance-ids "${id}" --out yaml
+fi
+aws ec2 wait instance-stopped --instance-ids "${id}" && \
+echo -e "\nInstance stopped"
