@@ -1,6 +1,7 @@
 # Quick Terraform EC2 Instance
 
-- Create an EC2 instance (Latest Amazon Linux 2, graviton by default) in AWS in a chosen VPC and subnet (**run bash script to populate locals!**). This creates a t3 or t4g instance. If you want to use something else, update `local.instance_type`.
+- Create an EC2 instance (Latest Amazon Linux 2, graviton by default) in AWS in a chosen VPC and subnet (**run bash script to populate locals!**).
+- This creates a t3 or t4g instance. If you want to use something else, update `local.instance_type`.
 
 - Create a security group, role, instance profile, etc.
 
