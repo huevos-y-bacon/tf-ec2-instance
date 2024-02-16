@@ -68,19 +68,6 @@ data "aws_ami" "foo" {
   }
 }
 
-locals {
-  # DONT ADD HERE - run get_vpc_and_subnet.sh to get these values:
-  # included in vpc_subnet.tf: local.name_prefix local.vpc_id, local.subnet_id, local.subnet_name
-
-  name = var.purpose == null ? "${local.name_prefix}-${local.subnet_name}" : "${local.name_prefix}-${var.purpose}"
-
-  instance_type = var.graviton ? "t4g.${var.size}" : "t3.${var.size}"
-  arch          = var.graviton ? "arm64" : "x86_64"
-  ami           = data.aws_ami.foo.id
-
-  user_data = file("${path.module}/user_data.sh") # this is the script that will be run on the instance
-}
-
 # data "http" "myip" {
 #   url = "https://wtfismyip.com/text"
 # }

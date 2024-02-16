@@ -1,4 +1,16 @@
 # EC2 INSTANCE WITH SSM SM AND EC2 ROLE
+locals {
+  # DONT ADD VPC INFO HERE - run bin/get_vpc_and_subnet.sh to set these values:
+  # included in vpc_subnet.tf: local.name_prefix local.vpc_id, local.subnet_id, local.subnet_name
+
+  name = var.purpose == null ? "${local.name_prefix}-${local.subnet_name}" : "${local.name_prefix}-${var.purpose}"
+  arch = var.graviton ? "arm64" : "x86_64"
+  ami  = data.aws_ami.foo.id
+
+  instance_type = var.graviton ? "t4g.${var.size}" : "t3.${var.size}"
+
+  user_data = file("${path.module}/user_data.sh") # this is the script that will be run on the instance
+}
 
 resource "aws_iam_role" "foo" {
   name_prefix        = local.name_prefix
