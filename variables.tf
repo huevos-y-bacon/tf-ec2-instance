@@ -68,6 +68,12 @@ data "aws_ami" "foo" {
   }
 }
 
+variable "attach_eip" {
+  description = "Set to true to create and attach an Elastic IP to EC2 instance. Use where launching in public subnet, but VPC is set to block automatic public IP assignment."
+  type        = bool
+  default     = false
+}
+
 # data "http" "myip" {
 #   url = "https://wtfismyip.com/text"
 # }

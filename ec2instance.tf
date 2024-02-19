@@ -113,3 +113,13 @@ resource "aws_security_group" "foo" {
     Terraform = true
   }
 }
+
+resource "aws_eip" "foo" {
+  count    = var.attach_eip ? 1 : 0
+  instance = aws_instance.foo.id
+  domain   = "vpc"
+
+  tags = {
+    Name = local.name
+  }
+}
