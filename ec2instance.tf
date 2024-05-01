@@ -76,6 +76,23 @@ resource "aws_instance" "foo" {
 
   key_name = var.key_name != null ? var.key_name : null # if key_name is not set, do not set key_name
 
+  root_block_device {
+    volume_size = var.root_vol.size
+    volume_type = var.root_vol.type
+    encrypted   = false # for now
+  }
+
+  # THIS REQUIRES FURTHER WORK - I.E. MOUNTING, FORMATTING, ETC.
+  dynamic "ebs_block_device" {
+    for_each = var.ebs_vol.size > 0 ? [var.ebs_vol] : []
+    content {
+      device_name = ebs_block_device.value.device_name
+      volume_size = ebs_block_device.value.size
+      volume_type = ebs_block_device.value.type
+      encrypted   = false # for now
+    }
+  }
+
   metadata_options {
     http_tokens = "required" # Enforce IMDSv2; see https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
   }

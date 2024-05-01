@@ -77,3 +77,23 @@ variable "attach_eip" {
 # data "http" "myip" {
 #   url = "https://wtfismyip.com/text"
 # }
+
+variable "root_vol" {
+  description = "Root volume config"
+  type        = map(any)
+  default = {
+    size = 15
+    type = "gp3"
+  }
+}
+
+# THIS REQUIRES FURTHER WORK - I.E. MOUNTING, FORMATTING, ETC.
+variable "ebs_vol" {
+  description = "EBS volume config. size = 0 if no EBS volume. Supply size, type and device_name if you want to attach EBS volume."
+  type        = map(any)
+  default = {
+    size        = 0
+    type        = "gp3"
+    device_name = "/dev/sdf"
+  }
+}
