@@ -2,6 +2,7 @@
 **/.archive/**
 .DS_Store
 .vscode
+.terraform
 .terraform.lock.hcl
 terraform.*
 vpc_subnet.*

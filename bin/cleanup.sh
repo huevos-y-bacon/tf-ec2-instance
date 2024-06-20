@@ -35,6 +35,7 @@ echo "${YELLOW}Deleting generated files:${BOLD} .terraform*, terraform.tfstate*,
 rm -rf .terraform
 rm -f .terraform.*
 rm -f terraform.tfstate*
+rm -f terraform.tfvars*
 rm -f vpc_subnet.tf
 
 if [[ -f terraform.tfvars ]]; then
