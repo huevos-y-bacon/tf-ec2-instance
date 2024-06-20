@@ -1,9 +1,9 @@
 # EC2 INSTANCE WITH SSM SM AND EC2 ROLE
 locals {
   # DONT ADD VPC INFO HERE - run bin/get_vpc_and_subnet.sh to set these values:
-  # included in vpc_subnet.tf: local.name_prefix local.vpc_id, local.subnet_id, local.subnet_name
+  # included in terraform.tfvars: var.name_prefix var.vpc_id, var.subnet_id, var.subnet_name, var.name_prefix, var.vpc_id
 
-  name = var.purpose == null ? "${local.name_prefix}-${local.subnet_name}" : "${local.name_prefix}-${var.purpose}"
+  name = var.purpose == null ? "${var.name_prefix}-${var.subnet_name}" : "${var.name_prefix}-${var.purpose}"
   arch = var.graviton ? "arm64" : "x86_64"
   ami  = data.aws_ami.foo.id
 
@@ -13,7 +13,7 @@ locals {
 }
 
 resource "aws_iam_role" "foo" {
-  name_prefix        = local.name_prefix
+  name_prefix        = var.name_prefix
   path               = "/"
   assume_role_policy = <<-EOF
     {
@@ -69,7 +69,7 @@ resource "aws_iam_instance_profile" "foo" {
 resource "aws_instance" "foo" {
   ami                    = local.ami
   instance_type          = local.instance_type
-  subnet_id              = local.subnet_id
+  subnet_id              = var.subnet_id
   iam_instance_profile   = var.attach_instance_profile ? aws_iam_instance_profile.foo[0].name : null
   vpc_security_group_ids = [aws_security_group.foo.id]
   user_data_base64       = base64encode(local.user_data)
@@ -82,7 +82,9 @@ resource "aws_instance" "foo" {
     encrypted   = false # for now
   }
 
-  # THIS REQUIRES FURTHER WORK - I.E. MOUNTING, FORMATTING, ETC.
+  # THIS REQUIRES FURTHER WORK 
+  # - E.G. MOUNTING, FORMATTING, ETC. 
+  # - Create as separate resource to avoid for recreate, i.e. can be created after instance is created?
   dynamic "ebs_block_device" {
     for_each = var.ebs_vol.size > 0 ? [var.ebs_vol] : []
     content {
@@ -106,7 +108,7 @@ resource "aws_instance" "foo" {
 resource "aws_security_group" "foo" {
   name_prefix = "${local.name}-"
   description = local.name
-  vpc_id      = local.vpc_id
+  vpc_id      = var.vpc_id
 
   #ts:skip=AC_AWS_0319 play account - home access only
   # ingress {
@@ -128,6 +130,10 @@ resource "aws_security_group" "foo" {
   tags = {
     Name      = local.name
     Terraform = true
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
