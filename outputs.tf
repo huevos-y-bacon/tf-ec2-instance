@@ -23,6 +23,10 @@ output "private_ip" {
   value = aws_instance.foo.private_ip
 }
 
-output "public_eip" {
-  value = var.attach_eip ? aws_eip.foo[0].public_ip : null
+output "public_ip" {
+  value = var.attach_eip ? aws_eip.foo[0].public_ip : aws_instance.foo.public_ip
+}
+
+output "public_ip_is_eip" {
+  value = var.attach_eip ? true : null
 }
