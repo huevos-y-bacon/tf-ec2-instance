@@ -19,6 +19,10 @@ output "ami_arch" {
   value = local.arch
 }
 
-# output "public_ip" {
-#   value = aws_instance.foo.public_ip
-# }
+output "private_ip" {
+  value = aws_instance.foo.private_ip
+}
+
+output "public_eip" {
+  value = var.attach_eip ? aws_eip.foo[0].public_ip : null
+}
