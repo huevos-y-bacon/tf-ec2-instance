@@ -99,9 +99,9 @@ variable "attach_eip" {
   default     = false
 }
 
-# data "http" "myip" {
-#   url = "https://wtfismyip.com/text"
-# }
+data "http" "myip" {
+  url = "https://wtfismyip.com/text"
+}
 
 variable "root_vol" {
   description = "Root volume config"
@@ -154,4 +154,10 @@ variable "subnet_cidr" {
   description = "Subnet CIDR"
   type        = string
   default     = null
+}
+
+variable "ssh_from_my_ip" {
+  description = "Use my IP for SSH access"
+  type        = bool
+  default     = false
 }

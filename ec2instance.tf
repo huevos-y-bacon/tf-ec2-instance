@@ -20,7 +20,7 @@ resource "random_string" "foo" {
 }
 
 resource "aws_iam_role" "foo" {
-  name_prefix        = local.name
+  name               = local.name
   path               = "/"
   assume_role_policy = <<-EOF
     {
@@ -119,15 +119,6 @@ resource "aws_security_group" "foo" {
   description = local.name
   vpc_id      = var.vpc_id
 
-  #ts:skip=AC_AWS_0319 play account - home access only
-  # ingress {
-  #   from_port   = 22
-  #   to_port     = 22
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["${chomp(data.http.myip.response_body)}/32"]
-  #   description = "ssh home"
-  # }
-
   egress {
     from_port        = 0
     to_port          = 0
@@ -144,6 +135,18 @@ resource "aws_security_group" "foo" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+resource "aws_security_group_rule" "ssh_from_my_ip" {
+  count = var.ssh_from_my_ip ? 1 : 0
+
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["${chomp(data.http.myip.response_body)}/32"]
+  description       = "ssh from my ip"
+  security_group_id = aws_security_group.foo.id
 }
 
 resource "aws_eip" "foo" {
