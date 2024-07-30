@@ -3,11 +3,16 @@
 
 # THIS SCRIPT IS USED TO GENERATE THE vpc_subnet.tf FILE
 # Filter subnets by name with the first argument
-#   - e.g. bin/get_vpc_and_subnet.sh private
+#   - e.g. bin/prep.sh private
 
-source colours 2>/dev/null
+# Check for jq, aws
+command -v jq >/dev/null 2>&1 || { echo >&2 "jq is required but it's not installed.  Aborting."; exit 1; }
+command -v aws >/dev/null 2>&1 || { echo >&2 "aws is required but it's not installed.  Aborting."; exit 1; }
 
+RED=$(tput setaf 1); NORM=$(tput sgr0)
+GREEN=$(tput setaf 2); BOLD=$(tput bold)
 CWD=$(basename "$(pwd)")
+
 if [[ "${CWD}" == "bin" ]]; then
     echo "${RED}Error: Script cannot be executed directly from inside ${CWD}.${NORM}"
     exit 1
@@ -25,9 +30,9 @@ extract_vpcs(){
 
 select_vpc() {
   echo "Select a VPC:"
-  select vpc in ${vpcs}; # 
+  select vpc in ${vpcs};
   do
-    echo "You selected ${vpc} (${REPLY})"
+    echo -e "\nYou selected ${vpc} (${REPLY})\n"
     export VPC_ID=$(echo "${vpc}" | cut -d ',' -f 2 | sed 's/"//g')
     export VPC_CIDR=$(echo "${vpc}" | cut -d ',' -f 3 | sed 's/"//g')
     return
@@ -49,7 +54,7 @@ select_subnet(){
   echo "Select a subnet:"
   select subnet in ${subnets};
   do
-    echo "You selected ${subnet} (${REPLY})"
+    echo -e "\nYou selected ${subnet} (${REPLY})\n"
     export SUBNET_ID=$(echo "${subnet}" | cut -d ',' -f 2 | sed 's/"//g')
     export SUBNET_CIDR=$(echo "${subnet}" | cut -d ',' -f 3 | sed 's/"//g')
     return
@@ -61,10 +66,10 @@ select_vpc || exit 1
 
 subnets="$(extract_subnets | sed 's/[[:space:]]//g' | sort)"
 
-# filter subnets by name
+# Filter subnets by name
 if [[ -n $1 ]]; then
   filter=$1
-  echo "Filtering subnets by string: ${filter}"
+  echo -e "Filtering subnets by string: ${RED}${filter}${NORM}\n"
   subnets="$(echo "${subnets}" | grep -i "${filter}")"
 fi
 
@@ -79,5 +84,6 @@ subnet_id   = \"${SUBNET_ID}\"
 subnet_cidr = \"${SUBNET_CIDR}\"
 " > terraform.tfvars
 
-echo "Generated terraform.tfvars :"
+echo -e "\n${BOLD}Generated terraform.tfvars:${NORM}${GREEN}\n"
 cat terraform.tfvars
+tput sgr0

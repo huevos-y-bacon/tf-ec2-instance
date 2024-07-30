@@ -1,6 +1,6 @@
 # EC2 INSTANCE WITH SSM SM AND EC2 ROLE
 locals {
-  # DONT ADD VPC INFO HERE - run bin/get_vpc_and_subnet.sh to set these values:
+  # DONT ADD VPC INFO HERE - run bin/prep.sh to set these values:
   # included in terraform.tfvars: var.name_prefix var.vpc_id, var.subnet_id, var.name_prefix, var.vpc_id
 
   name = var.purpose == null ? "${var.name_prefix}-${random_string.foo.id}" : "${var.name_prefix}-${var.purpose}-${random_string.foo.id}"

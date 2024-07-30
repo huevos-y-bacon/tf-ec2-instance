@@ -16,10 +16,10 @@
 
 ##  Steps
 
-1. Prepare the necesary subnet locals using the script `bin/get_vpc_and_subnet.sh`
+1. Prepare the necesary subnet locals using the script `bin/prep.sh`
     - This script is used to generate the `vpc_subnet.tf` file
     - You can filter subnets by name with the first argument
-      - e.g. `bin/get_vpc_and_subnet.sh private`
+      - e.g. `bin/prep.sh private`
 2. Run `tfinit`
 3. Run `tfplan`, `tfapply`, etc as usual 
 
