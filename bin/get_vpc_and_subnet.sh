@@ -28,13 +28,6 @@ select_vpc() {
   select vpc in ${vpcs}; # 
   do
     echo "You selected ${vpc} (${REPLY})"
-    VPC_NAME=$(echo "${vpc}" | cut -d ',' -f 1 | sed 's/"//g')
-    # if VPC_NAME is blank, then set the VPC_NAME to "unnamed-vpc" or convert to lowercase
-    if [[ "$VPC_NAME" == "" ]]; then
-      export VPC_NAME="unnamed-vpc"
-    else 
-      export VPC_NAME=$(echo "${VPC_NAME}" | tr '[:upper:]' '[:lower:]')
-    fi
     export VPC_ID=$(echo "${vpc}" | cut -d ',' -f 2 | sed 's/"//g')
     export VPC_CIDR=$(echo "${vpc}" | cut -d ',' -f 3 | sed 's/"//g')
     return
@@ -57,13 +50,6 @@ select_subnet(){
   select subnet in ${subnets};
   do
     echo "You selected ${subnet} (${REPLY})"
-    SUBNET_NAME=$(echo "${subnet}" | cut -d ',' -f 1 | sed 's/"//g')
-    # if SUBNET_NAME is blank, then set the SUBNET_NAME to "unnamed-subnet" or convert to lowercase
-    if [[ "$SUBNET_NAME" == "" ]]; then
-      export SUBNET_NAME="unnamed-subnet"
-    else
-      export SUBNET_NAME=$(echo "${SUBNET_NAME}" | tr '[:upper:]' '[:lower:]')
-    fi
     export SUBNET_ID=$(echo "${subnet}" | cut -d ',' -f 2 | sed 's/"//g')
     export SUBNET_CIDR=$(echo "${subnet}" | cut -d ',' -f 3 | sed 's/"//g')
     return
@@ -88,10 +74,8 @@ USER=$(whoami)
 
 echo "name_prefix = \"${USER}-${TODAY}\"
 vpc_id      = \"${VPC_ID}\" 
-vpc_name    = \"${VPC_NAME}\" 
 vpc_cidr    = \"${VPC_CIDR}\"
 subnet_id   = \"${SUBNET_ID}\"
-subnet_name = \"${SUBNET_NAME}\"
 subnet_cidr = \"${SUBNET_CIDR}\"
 " > terraform.tfvars
 

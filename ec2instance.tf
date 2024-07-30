@@ -1,19 +1,26 @@
 # EC2 INSTANCE WITH SSM SM AND EC2 ROLE
 locals {
   # DONT ADD VPC INFO HERE - run bin/get_vpc_and_subnet.sh to set these values:
-  # included in terraform.tfvars: var.name_prefix var.vpc_id, var.subnet_id, var.subnet_name, var.name_prefix, var.vpc_id
+  # included in terraform.tfvars: var.name_prefix var.vpc_id, var.subnet_id, var.name_prefix, var.vpc_id
 
-  name = var.purpose == null ? "${var.name_prefix}-${var.subnet_name}" : "${var.name_prefix}-${var.purpose}"
+  name = var.purpose == null ? "${var.name_prefix}-${random_string.foo.id}" : "${var.name_prefix}-${var.purpose}-${random_string.foo.id}"
   arch = var.graviton ? "arm64" : "x86_64"
-  ami  = data.aws_ami.foo.id
+  ami  = var.linux_version == "al2023" ? data.aws_ami.al2023.id : data.aws_ami.al2.id
 
   instance_type = var.graviton ? "t4g.${var.size}" : "t3.${var.size}"
 
   user_data = file("${path.module}/user_data.sh") # this is the script that will be run on the instance
 }
 
+# Random string to ensure unique names without using the name_prefix
+resource "random_string" "foo" {
+  length  = 8
+  special = false
+  upper   = false
+}
+
 resource "aws_iam_role" "foo" {
-  name_prefix        = var.name_prefix
+  name_prefix        = local.name
   path               = "/"
   assume_role_policy = <<-EOF
     {
@@ -103,10 +110,12 @@ resource "aws_instance" "foo" {
     Name      = local.name
     Terraform = true
   }
+
+  lifecycle { ignore_changes = [ami] }
 }
 
 resource "aws_security_group" "foo" {
-  name_prefix = "${local.name}-"
+  name        = local.name
   description = local.name
   vpc_id      = var.vpc_id
 
@@ -116,7 +125,7 @@ resource "aws_security_group" "foo" {
   #   to_port     = 22
   #   protocol    = "tcp"
   #   cidr_blocks = ["${chomp(data.http.myip.response_body)}/32"]
-  #   description = "ssh j home"
+  #   description = "ssh home"
   # }
 
   egress {
