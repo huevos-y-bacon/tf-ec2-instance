@@ -28,5 +28,13 @@ output "public_ip" {
 }
 
 output "public_ip_is_eip" {
-  value = var.attach_eip ? true : false
+  value = var.attach_eip
+}
+
+output "ssh_from_my_ip" {
+  value = var.ssh_from_my_ip
+}
+
+output "my_ip" {
+  value = var.ssh_from_my_ip ? chomp(data.http.myip.response_body) : null
 }

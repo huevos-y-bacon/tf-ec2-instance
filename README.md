@@ -16,10 +16,10 @@
 
 ##  Steps
 
-1. Prepare the necesary subnet locals using the script `bin/get_vpc_and_subnet.sh`
+1. Prepare the necesary subnet locals using the script `bin/prep.sh`
     - This script is used to generate the `vpc_subnet.tf` file
     - You can filter subnets by name with the first argument
-      - e.g. `bin/get_vpc_and_subnet.sh private`
+      - e.g. `bin/prep.sh private`
 2. Run `tfinit`
 3. Run `tfplan`, `tfapply`, etc as usual 
 
@@ -35,8 +35,8 @@
 
 ### Public IP Addresses
 
-- If you deploy into a public subnet, your instance would be assigned a public IP address only if your VPC is configured to automatically assign public IPs. It is best practice to disable this. If you want to deploy into a public subnet that does not auto-assign public IPs, you need to set the `attach_eip` variable to `true`.
+If you deploy into a public subnet, your instance would be assigned a public IP address only if your VPC is configured to automatically assign public IPs. It is best practice to disable this. If you want to deploy into a public subnet that does not auto-assign public IPs, you need to set the `attach_eip` variable to `true`.
 
 ### AMIs
 
-- The instance resource is configured to ignore changes to the value of `local.ami` _(`data.aws_ami.al2.id` or `data.aws_ami.al2023.id`)_ to avoid recreating the instance, otherwise it would recreate the instance every time a new version of the AMI is released.
+The instance resource is configured to ignore changes to the value of `data.aws_ami.al2.id` to avoid recreating the instance, otherwise it would recreate the instance every time a new version of the AMI is released.
