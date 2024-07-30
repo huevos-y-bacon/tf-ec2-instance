@@ -53,7 +53,7 @@ variable "size" { # t-shirt size
   default     = "micro" # micro is free tier eligible
 }
 
-data "aws_ami" "foo" {
+data "aws_ami" "al2" {
   most_recent = true
   owners      = ["amazon"]
 
@@ -65,6 +65,31 @@ data "aws_ami" "foo" {
   filter {
     name   = "architecture"
     values = [local.arch]
+  }
+}
+
+data "aws_ami" "al2023" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = [local.arch]
+  }
+}
+
+variable "linux_version" {
+  description = "Amazon Linux 2 or Amazon Linux 2023 (default)"
+  type        = string
+  default     = "al2023"
+  validation {
+    condition     = var.linux_version == "al2" || var.linux_version == "al2023"
+    error_message = "Invalid value for linux_version. Must be al2 or al2023."
   }
 }
 
@@ -113,12 +138,6 @@ variable "vpc_id" {
   default     = null
 }
 
-variable "vpc_name" {
-  description = "VPC Name"
-  type        = string
-  default     = null
-}
-
 variable "vpc_cidr" {
   description = "VPC CIDR"
   type        = string
@@ -127,12 +146,6 @@ variable "vpc_cidr" {
 
 variable "subnet_id" {
   description = "Subnet ID"
-  type        = string
-  default     = null
-}
-
-variable "subnet_name" {
-  description = "Subnet Name"
   type        = string
   default     = null
 }

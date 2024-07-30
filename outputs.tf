@@ -12,7 +12,7 @@ output "instance_type" {
 }
 
 output "ami" {
-  value = local.ami
+  value = aws_instance.foo.ami
 }
 
 output "ami_arch" {
@@ -28,5 +28,5 @@ output "public_ip" {
 }
 
 output "public_ip_is_eip" {
-  value = var.attach_eip ? true : null
+  value = var.attach_eip ? true : false
 }
