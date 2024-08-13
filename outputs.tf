@@ -38,3 +38,7 @@ output "ssh_from_my_ip" {
 output "my_ip" {
   value = var.ssh_from_my_ip ? chomp(data.http.myip.response_body) : null
 }
+
+output "key_name" {
+  value = var.key_name != "" ? var.key_name : null
+}
