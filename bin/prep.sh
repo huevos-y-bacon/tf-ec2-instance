@@ -82,6 +82,13 @@ vpc_id      = \"${VPC_ID}\"
 vpc_cidr    = \"${VPC_CIDR}\"
 subnet_id   = \"${SUBNET_ID}\"
 subnet_cidr = \"${SUBNET_CIDR}\"
+
+# Other variable overrides
+# ssh_from_my_ip = true # default is false
+# key_name = \"my-key\" # default is empty
+# attach_eip = true # default is false
+# linux_version  = \"ubuntu22\" # Options: al2023 (default), al2 (not recommended) and ubuntu22
+# graviton       = false # default is true
 " > terraform.tfvars
 
 echo -e "\n${BOLD}Generated terraform.tfvars:${NORM}${GREEN}\n"

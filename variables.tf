@@ -83,13 +83,28 @@ data "aws_ami" "al2023" {
   }
 }
 
+data "aws_ami" "ubuntu22" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-*-22.04-*-server-*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = [local.arch]
+  }
+}
+
 variable "linux_version" {
   description = "Amazon Linux 2 or Amazon Linux 2023 (default)"
   type        = string
   default     = "al2023"
   validation {
-    condition     = var.linux_version == "al2" || var.linux_version == "al2023"
-    error_message = "Invalid value for linux_version. Must be al2 or al2023."
+    condition     = var.linux_version == "al2" || var.linux_version == "al2023" || var.linux_version == "ubuntu22"
+    error_message = "Invalid value for linux_version. Must be al2, al2023 or ubuntu22"
   }
 }
 
