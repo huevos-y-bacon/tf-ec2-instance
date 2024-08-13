@@ -5,11 +5,12 @@ locals {
 
   name = var.purpose == null ? "${var.name_prefix}-${random_string.foo.id}" : "${var.name_prefix}-${var.purpose}-${random_string.foo.id}"
   arch = var.graviton ? "arm64" : "x86_64"
-  ami  = var.linux_version == "al2023" ? data.aws_ami.al2023.id : data.aws_ami.al2.id
+  ami  = var.linux_version == "al2023" ? data.aws_ami.al2023.id : var.linux_version == "al2" ? data.aws_ami.al2.id : data.aws_ami.ubuntu22.id
 
   instance_type = var.graviton ? "t4g.${var.size}" : "t3.${var.size}"
 
-  user_data = file("${path.module}/user_data.sh") # this is the script that will be run on the instance
+  user_data = var.linux_version == "al2023" || var.linux_version == "al2" ? file("${path.module}/user_data.sh") : file("${path.module}/user_data_apt.sh")
+
 }
 
 # Random string to ensure unique names without using the name_prefix
