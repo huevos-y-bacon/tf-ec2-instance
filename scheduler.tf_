@@ -1,0 +1,141 @@
+# rename to enable
+
+variable "sched_cron" {
+  description = "cron expression for the scheduler. Default is 6pm daily UTC"
+  type        = string
+  default     = "cron(0 18 * * ? *)"
+}
+
+# IAM Role for Lambda
+resource "aws_iam_role" "lambda_exec_role" {
+  name = "lambda_exec_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        },
+      },
+    ],
+  })
+
+  managed_policy_arns = [
+    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    aws_iam_policy.lambda_stop_ec2_policy.arn
+  ]
+}
+
+# IAM Policy for Lambda to Stop EC2 instances
+resource "aws_iam_policy" "lambda_stop_ec2_policy" {
+  name        = "lambda_stop_ec2_policy"
+  description = "Policy to allow Lambda to stop EC2 instances"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "ec2:StopInstances",
+        ],
+        Effect   = "Allow",
+        Resource = "*"
+      },
+    ],
+  })
+}
+
+# # Attach the policy to the role
+# resource "aws_iam_role_policy_attachment" "lambda_exec_role_attachment" {
+#   role       = aws_iam_role.lambda_exec_role.name
+#   policy_arn = aws_iam_policy.lambda_stop_ec2_policy.arn
+# }
+
+# resource "aws_iam_role_policy_attachment" "lambda_basic_exec_role_attachment" {
+#   role       = aws_iam_role.lambda_exec_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# }
+
+# Define local variables for instance ID and name
+locals {
+  instance_id   = aws_instance.foo.id           # instance created in existing ec2instance.tf
+  instance_name = aws_instance.foo.tags["Name"] # Replace with the correct tag key if different
+}
+
+# Lambda function code to stop the EC2 instance
+locals {
+  lambda_code = <<-EOF
+    import boto3
+
+    def handler(event, context):
+        ec2 = boto3.client('ec2')
+        ec2.stop_instances(InstanceIds=['${local.instance_id}'])
+        return 'EC2 instance ${local.instance_id} (${local.instance_name}) stopped'
+  EOF
+}
+
+# Save the Lambda function code to a file
+resource "local_file" "lambda_script" {
+  content  = local.lambda_code
+  filename = "${path.module}/lambda_function/index.py"
+
+  depends_on = [null_resource.create_directory]
+}
+
+# Zip file for Lambda function code
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/lambda_function"
+  output_path = "${path.module}/lambda_function_payload.zip"
+
+  depends_on = [local_file.lambda_script]
+}
+
+# Lambda function to stop EC2 instance
+resource "aws_lambda_function" "stop_ec2_lambda" {
+  function_name    = "stop_ec2_instance_${local.instance_id}"
+  description      = "Lambda function to stop EC2 instance ${local.instance_id} (${local.instance_name})"
+  role             = aws_iam_role.lambda_exec_role.arn
+  handler          = "index.handler"
+  runtime          = "python3.12"
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  timeout          = 30
+
+  depends_on = [local_file.lambda_script, null_resource.create_directory]
+}
+
+# CloudWatch Event Rule to trigger Lambda every 60 minutes
+resource "aws_cloudwatch_event_rule" "cron" {
+  name                = "stop_ec2_instance_${local.instance_id}"
+  schedule_expression = var.sched_cron
+}
+
+# Permission for CloudWatch to invoke the Lambda
+resource "aws_lambda_permission" "allow_cloudwatch_to_invoke_lambda" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.stop_ec2_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.cron.arn
+}
+
+# Attach the Lambda function to the CloudWatch Event Rule
+resource "aws_cloudwatch_event_target" "invoke_lambda" {
+  rule      = aws_cloudwatch_event_rule.cron.name
+  target_id = "invoke_lambda"
+  arn       = aws_lambda_function.stop_ec2_lambda.arn
+}
+
+resource "null_resource" "create_directory" {
+  provisioner "local-exec" {
+    command = "mkdir -p ${path.module}/lambda_function"
+  }
+}
+
+output "scheduler_lambda" {
+  value = aws_lambda_function.stop_ec2_lambda.function_name
+}
