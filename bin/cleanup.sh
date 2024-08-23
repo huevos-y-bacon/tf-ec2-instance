@@ -25,18 +25,40 @@ confirm(){
   unset INPUT
 }
 
+prompt_retain_tfvars(){
+  echo
+  read -p "Do you want to retain terraform.tfvars? (y/n) " choice
+  case "${choice}" in
+    y|Y ) echo -e "\n${GREEN}Retaining ${BOLD}terraform.tfvars${NORM}\n";;
+    * ) rm -f terraform.tfvars*;;
+  esac
+}
+
 confirm "This will destroy the EC2 instance"
 
 terraform destroy --auto-approve
 
 confirm "This will destroy all generated config - only do this if the terraform resources have been destroyed!"
 
-echo "${YELLOW}Deleting generated files:${BOLD} .terraform*, terraform.tfstate*, vpc_subnet.tf${NORM}"
-rm -rf .terraform
-rm -f .terraform.*
-rm -f terraform.tfstate*
-rm -f terraform.tfvars*
-rm -f vpc_subnet.tf
+echo "${YELLOW}Deleting generated files${NORM}"
+LIST=(
+  .terraform
+  .terraform.*
+  terraform.tfstate*
+  # terraform.tfvars* # prompt to retain
+  vpc_subnet.tf
+  scheduler.tf
+  lambda_function*
+)
+
+for item in "${LIST[@]}"; do
+  if [[ -e ${item} ]]; then
+    echo -e "${RED}Deleting ${BOLD}${item}${NORM}"
+    rm -rf ${item}
+  fi
+done
+
+if [[ -z ${FORCE} ]]; then prompt_retain_tfvars; else rm -f terraform.tfvars*; fi
 
 if [[ -f terraform.tfvars ]]; then
   echo -e "\n${GREEN}Retained ${BOLD}terraform.tfvars${NORM}\n"

@@ -3,14 +3,11 @@ locals {
   # DONT ADD VPC INFO HERE - run bin/prep.sh to set these values:
   # included in terraform.tfvars: var.name_prefix var.vpc_id, var.subnet_id, var.name_prefix, var.vpc_id
 
-  name = var.purpose == null ? "${var.name_prefix}-${random_string.foo.id}" : "${var.name_prefix}-${var.purpose}-${random_string.foo.id}"
-  arch = var.graviton ? "arm64" : "x86_64"
-  ami  = var.linux_version == "al2023" ? data.aws_ami.al2023.id : var.linux_version == "al2" ? data.aws_ami.al2.id : data.aws_ami.ubuntu22.id
-
+  name          = var.purpose == null ? "${var.name_prefix}-${random_string.foo.id}" : "${var.name_prefix}-${var.purpose}-${random_string.foo.id}"
+  arch          = var.graviton ? "arm64" : "x86_64"
+  ami           = var.linux_version == "al2023" ? data.aws_ami.al2023.id : var.linux_version == "al2" ? data.aws_ami.al2.id : data.aws_ami.ubuntu22.id
   instance_type = var.graviton ? "t4g.${var.size}" : "t3.${var.size}"
-
-  user_data = var.linux_version == "al2023" || var.linux_version == "al2" ? file("${path.module}/user_data.sh") : file("${path.module}/user_data_apt.sh")
-
+  user_data     = file("${path.module}/user_data/user_data.sh")
 }
 
 # Random string to ensure unique names without using the name_prefix
