@@ -61,6 +61,16 @@ select_subnet(){
   done
 }
 
+scheduler_prompt(){
+  echo "Do you want to schedule the instance to stop at 6pm daily? (you can update this in terraform.tfvars later)"
+  select yn in "Yes" "No"; do
+    case $yn in
+      Yes ) SCHED="# sched_cron     = \"cron(0 18 * * ? *)\" # Instance shutdown scheduler"; echo "Scheduler enabled"; cp scheduler.tf_ scheduler.tf; return;;
+      No ) return 1;;
+    esac
+  done
+}
+
 vpcs="$(extract_vpcs | sort)"
 select_vpc || exit 1
 
@@ -77,6 +87,8 @@ select_subnet || exit 1
 TODAY=$(date +%Y%m%d)
 USER=$(whoami)
 
+scheduler_prompt || exit 1
+
 echo "name_prefix = \"${USER}-${TODAY}\"
 vpc_id      = \"${VPC_ID}\" 
 vpc_cidr    = \"${VPC_CIDR}\"
@@ -88,7 +100,9 @@ subnet_cidr = \"${SUBNET_CIDR}\"
 # key_name = \"my-key\" # default is empty
 # attach_eip = true # default is false
 # linux_version  = \"ubuntu22\" # Options: al2023 (default), al2 (not recommended) and ubuntu22
+# size           = \"large\" # Options: nano, micro (default), small, medium, large, etc
 # graviton       = false # default is true
+${SCHED}
 " > terraform.tfvars
 
 echo -e "\n${BOLD}Generated terraform.tfvars:${NORM}${GREEN}\n"
