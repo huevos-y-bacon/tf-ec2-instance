@@ -139,3 +139,7 @@ resource "null_resource" "create_directory" {
 output "scheduler_lambda" {
   value = aws_lambda_function.stop_ec2_lambda.function_name
 }
+
+output "scheduler_cron" {
+  value = aws_cloudwatch_event_rule.cron.schedule_expression
+}
