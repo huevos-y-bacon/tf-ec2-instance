@@ -29,8 +29,8 @@ prompt_retain_tfvars(){
   echo
   read -p "Do you want to retain terraform.tfvars? (y/n) " choice
   case "${choice}" in
-    y|Y ) echo -e "\n${GREEN}Retaining ${BOLD}terraform.tfvars${NORM}\n";;
-    * ) rm -f terraform.tfvars*;;
+    n|N ) echo -e "${RED}Deleting ${BOLD}terraform.tfvars*${NORM}"; rm -f terraform.tfvars*;;
+    * ) return;;
   esac
 }
 
