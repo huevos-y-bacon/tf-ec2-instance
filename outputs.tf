@@ -32,7 +32,7 @@ output "public_ip_is_eip" {
 }
 
 output "ssh_from_my_ip" {
-  value = var.ssh_from_my_ip
+  value = var.ssh_from_my_ip ? var.ssh_from_my_ip : null
 }
 
 output "my_ip" {
