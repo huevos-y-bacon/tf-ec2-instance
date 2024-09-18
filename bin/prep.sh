@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=2016,2155,1091,2312
+# shellcheck disable=2016,2155,1091,2312,2181
 
 # THIS SCRIPT IS USED TO GENERATE THE vpc_subnet.tf FILE
 # Filter subnets by name with the first argument
@@ -18,8 +18,20 @@ if [[ "${CWD}" == "bin" ]]; then
     exit 1
 fi
 
+# source .env if exist
+if [[ -f .env ]]; then
+  source .env
+fi
+
+# set profile=--profile $profile if $profile is set
+if [[ -n $aws_profile ]]; then
+  profile="--profile $aws_profile"
+  echo "${RED}Using AWS profile: ${BOLD}${aws_profile}"
+  echo "Update the aws provider in providers.tf to change the profile used by terraform${NORM}"
+fi
+
 extract_vpcs(){
-  aws ec2 describe-vpcs \
+  aws ec2 describe-vpcs ${profile} \
     --query 'Vpcs[*].[
         Tags[?Key==`Name`].Value | [0],
         VpcId,
@@ -40,7 +52,7 @@ select_vpc() {
 }
 
 extract_subnets(){
-  aws ec2 describe-subnets \
+  aws ec2 describe-subnets ${profile} \
     --filters "Name=vpc-id,Values=${VPC_ID}" \
     --query 'Subnets[*].[
         Tags[?Key==`Name`].Value | [0],
@@ -66,15 +78,23 @@ scheduler_prompt(){
   select yn in "Yes" "No"; do
     case $yn in
       Yes ) SCHED="# sched_cron     = \"cron(0 18 * * ? *)\" # Instance shutdown scheduler"; echo "Scheduler enabled"; cp scheduler.tf_ scheduler.tf; return;;
-      No ) return 1;;
+      No ) return 0;;
     esac
   done
 }
 
 vpcs="$(extract_vpcs | sort)"
+if [[ -z $vpcs ]]; then
+  echo "${RED}No VPCs found. Exiting.${NORM}"
+  exit 1
+fi
 select_vpc || exit 1
 
 subnets="$(extract_subnets | sed 's/[[:space:]]//g' | sort)"
+if [[ -z $subnets ]]; then
+  echo "${RED}No subnets found. Exiting.${NORM}"
+  exit 1
+fi
 
 # Filter subnets by name
 if [[ -n $1 ]]; then
