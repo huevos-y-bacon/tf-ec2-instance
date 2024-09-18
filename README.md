@@ -6,6 +6,7 @@
 - Create a security group, role, instance profile, etc.
 
 - Example `terraform.tfvars` if you need to override some defaults:
+
   ```py
   size    = "small"     # defualt micro
   purpose = "STEAMPIPE" # default null, generate long resource name
@@ -14,14 +15,15 @@
 
 - ***NOTE*** - STATE IS STORED LOCALLY
 
-##  Steps
+## Steps
 
 1. Prepare the necesary subnet locals using the script `bin/prep.sh`
     - This script is used to generate the `vpc_subnet.tf` file
     - You can filter subnets by name with the first argument
       - e.g. `bin/prep.sh private`
-2. Run `tfinit`
-3. Run `tfplan`, `tfapply`, etc as usual 
+2. Create `.env` in `./` if you need to specify an AWS CLI Profile to use (add `aws_profile=profile_name`)
+3. Run `tfinit`
+4. Run `tfplan`, `tfapply`, etc as usual
 
 ## Cleanup
 

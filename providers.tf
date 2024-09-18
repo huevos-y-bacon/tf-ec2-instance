@@ -33,6 +33,7 @@ locals {
 
 provider "aws" {
   # region = var.region
+  # profile = "my_profile"
 
   default_tags { tags = local.provider_component_tags }
 }
